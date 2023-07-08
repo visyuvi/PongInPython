@@ -65,6 +65,33 @@ def draw(win, paddles, ball):
     pygame.display.update()
 
 
+def handle_collision(ball, left_paddle, right_paddle):
+    if ball.y + ball.radius >= HEIGHT:
+        ball.y_vel *= -1
+    elif ball.y - ball.radius <= 0:
+        ball.y_vel *= -1
+
+    if ball.x_vel < 0:  # Ball is going towards the left paddle
+        if left_paddle.y <= ball.y <= left_paddle.y + left_paddle.height:  # ball can hit the left paddle
+            if ball.x - ball.radius <= left_paddle.x + left_paddle.width:  # ball has collided with the left paddle
+                ball.x_vel *= -1
+
+                middle_y = left_paddle.y + left_paddle.height / 2
+                difference_in_y = middle_y - ball.y
+                reduction_factor = (left_paddle.height // 2) / ball.MAX_VEL
+                ball.y_vel = -1 * difference_in_y / reduction_factor
+
+    else:  # ball is going towards the right paddle
+        if right_paddle.y <= ball.y <= right_paddle.y + right_paddle.height:  # ball can hit the right paddle
+            if ball.x + ball.radius >= right_paddle.x:  # ball has collided with the right paddle
+                ball.x_vel *= -1
+
+                middle_y = right_paddle.y + right_paddle.height / 2
+                difference_in_y = middle_y - ball.y
+                reduction_factor = (right_paddle.height // 2) / ball.MAX_VEL
+                ball.y_vel = -1 * difference_in_y / reduction_factor
+
+
 def handle_paddle_movement(keys, left_paddle, right_paddle):
     if keys[pygame.K_w] and left_paddle.y - left_paddle.VEL > 0:
         left_paddle.move(up=True)
@@ -82,7 +109,8 @@ def main():
 
     left_paddle = Paddle(10, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
     right_paddle = Paddle(WIDTH - 10 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
-    ball = Ball(WIDTH//2, HEIGHT//2, BALL_RADIUS)
+    ball = Ball(WIDTH // 2, HEIGHT // 2, BALL_RADIUS)
+    
     while run:
         clock.tick(FPS)
         draw(WIN, [left_paddle, right_paddle], ball)
@@ -93,6 +121,7 @@ def main():
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
         ball.move()
+        handle_collision(ball, left_paddle, right_paddle)
     pygame.quit()
 
 
